@@ -1,3 +1,11 @@
+
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-mangroves",
+      "description": "A dense mangrove forest with sunlight filtering through the leaves.",
+      "imageUrl": "https://picsum.photos/seed/mangrove/1920/1080",
+      "imageHint": "mangrove forest"
+    }
+  ]
 }
