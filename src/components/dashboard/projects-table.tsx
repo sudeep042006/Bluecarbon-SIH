@@ -4,38 +4,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 
-const projects = [
-  {
-    name: 'Andaman Coast Mangrove Restoration',
-    location: 'Krabi, Thailand',
-    area: '150 Hectares',
-    status: 'Verified',
-  },
-  {
-    name: 'Sunderbans Seagrass Initiative',
-    location: 'West Bengal, India',
-    area: '300 Hectares',
-    status: 'Pending',
-  },
-  {
-    name: 'Mekong Delta Reforestation',
-    location: 'Soc Trang, Vietnam',
-    area: '50 Hectares',
-    status: 'Verified',
-  },
-  {
-    name: 'Borneo Peatland Rewetting',
-    location: 'Kalimantan, Indonesia',
-    area: '500 Hectares',
-    status: 'Rejected',
-  },
-  {
-    name: 'Pacific Atoll Coral Garden',
-    location: 'Funafuti, Tuvalu',
-    area: '20 Hectares',
-    status: 'Pending',
-  },
-];
+export type Project = {
+  name: string;
+  location: string;
+  area: string;
+  status: 'Verified' | 'Pending' | 'Rejected';
+};
 
 const statusStyles = {
   Verified: {
@@ -52,7 +26,11 @@ const statusStyles = {
   },
 };
 
-export function ProjectsTable() {
+type ProjectsTableProps = {
+  projects: Project[];
+};
+
+export function ProjectsTable({ projects }: ProjectsTableProps) {
   return (
     <Card>
       <CardHeader>
@@ -60,34 +38,41 @@ export function ProjectsTable() {
         <CardDescription>A list of all projects submitted by your organization.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Project Name</TableHead>
-              <TableHead className="hidden md:table-cell">Location</TableHead>
-              <TableHead className="hidden sm:table-cell">Area</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.map((project) => {
-              const statusInfo = statusStyles[project.status as keyof typeof statusStyles];
-              return (
-                <TableRow key={project.name}>
-                  <TableCell className="font-medium">{project.name}</TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">{project.location}</TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">{project.area}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge variant="outline" className={cn('flex items-center justify-center gap-2 w-[110px]', statusInfo.badgeClass)}>
-                      {statusInfo.icon}
-                      {project.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+         {projects.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project Name</TableHead>
+                <TableHead className="hidden md:table-cell">Location</TableHead>
+                <TableHead className="hidden sm:table-cell">Area</TableHead>
+                <TableHead className="text-right">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map((project) => {
+                const statusInfo = statusStyles[project.status as keyof typeof statusStyles];
+                return (
+                  <TableRow key={project.name}>
+                    <TableCell className="font-medium">{project.name}</TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground">{project.location}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-muted-foreground">{project.area}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="outline" className={cn('flex items-center justify-center gap-2 w-[110px] ml-auto', statusInfo.badgeClass)}>
+                        {statusInfo.icon}
+                        {project.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No projects submitted yet.</p>
+            <p className="text-sm">Click "Submit New Project" to get started.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

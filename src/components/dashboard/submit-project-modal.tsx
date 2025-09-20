@@ -20,12 +20,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { UploadCloud } from 'lucide-react';
+import type { Project } from './projects-table';
+
 
 const formSchema = z.object({
-  projectName: z.string().min(5, 'Project name is too short'),
-  projectDescription: z.string().min(20, 'Description should be at least 20 characters'),
-  projectCategory: z.string({ required_error: 'Please select a project category.' }),
+  name: z.string().min(5, 'Project name is too short'),
+  description: z.string().min(20, 'Description should be at least 20 characters'),
+  category: z.string({ required_error: 'Please select a project category.' }),
   location: z.string().min(3, 'Location is required'),
+  area: z.string().min(1, 'Area is required (e.g., 150 Hectares)'),
   evidenceFile: z
     .any()
     .refine((files) => files?.length === 1, 'Evidence document is required.')
@@ -34,22 +37,29 @@ const formSchema = z.object({
 
 type SubmitProjectModalProps = {
   children: React.ReactNode;
+  onProjectSubmit: (project: Omit<Project, 'status'>) => void;
 };
 
-export function SubmitProjectModal({ children }: SubmitProjectModalProps) {
+export function SubmitProjectModal({ children, onProjectSubmit }: SubmitProjectModalProps) {
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      projectName: '',
-      projectDescription: '',
+      name: '',
+      description: '',
       location: '',
+      area: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    onProjectSubmit({
+        name: values.name,
+        location: values.location,
+        area: values.area,
+    });
     toast({
       title: 'Project Submitted!',
       description: 'Your project is now pending review.',
@@ -72,7 +82,7 @@ export function SubmitProjectModal({ children }: SubmitProjectModalProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="projectName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Project Name</FormLabel>
@@ -85,7 +95,7 @@ export function SubmitProjectModal({ children }: SubmitProjectModalProps) {
             />
             <FormField
               control={form.control}
-              name="projectDescription"
+              name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Project Description</FormLabel>
@@ -97,9 +107,36 @@ export function SubmitProjectModal({ children }: SubmitProjectModalProps) {
               )}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
+               <FormField
                 control={form.control}
-                name="projectCategory"
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Krabi, Thailand" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="area"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Area</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 150 Hectares" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <FormField
+                control={form.control}
+                name="category"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
@@ -120,20 +157,6 @@ export function SubmitProjectModal({ children }: SubmitProjectModalProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Krabi, Thailand" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <FormField
               control={form.control}
               name="evidenceFile"
@@ -146,6 +169,7 @@ export function SubmitProjectModal({ children }: SubmitProjectModalProps) {
                       <Input
                         type="file"
                         className="pl-10"
+                        accept=".pdf,.jpg,.jpeg,.png,.docx"
                         onChange={(e) => field.onChange(e.target.files)}
                       />
                     </div>

@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,8 +16,12 @@ const formSchema = z.object({
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
-export function LoginForm() {
+type UserType = 'ngo' | 'corporate';
+
+export function LoginForm({ userType }: { userType: UserType }) {
   const { toast } = useToast();
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -26,19 +31,23 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Here you would typically handle the login logic, e.g., call an API
+    console.log({ ...values, userType });
+    
     toast({
       title: 'Login Successful',
       description: 'Redirecting to your dashboard...',
     });
-    // In a real app, you'd redirect here.
-    // window.location.href = '/dashboard';
+
+    if (userType === 'corporate') {
+      router.push('/dashboard/corporate');
+    } else {
+      router.push('/dashboard');
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
         <FormField
           control={form.control}
           name="email"
@@ -66,7 +75,7 @@ export function LoginForm() {
           )}
         />
         <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-          <LogIn className="mr-2 h-4 w-4" /> Login
+          <LogIn className="mr-2 h-4 w-4" /> Login as {userType === 'ngo' ? 'NGO' : 'Corporate'}
         </Button>
       </form>
     </Form>

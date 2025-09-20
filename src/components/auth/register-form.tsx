@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -11,42 +12,54 @@ import { useToast } from '@/hooks/use-toast';
 import { UserPlus } from 'lucide-react';
 
 const formSchema = z.object({
-  ngoName: z.string().min(2, { message: 'NGO name must be at least 2 characters.' }),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
 });
 
-export function RegisterForm() {
+type UserType = 'ngo' | 'corporate';
+
+export function RegisterForm({ userType }: { userType: UserType }) {
   const { toast } = useToast();
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      ngoName: '',
+      name: '',
       email: '',
       password: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Here you would typically handle the registration logic, e.g., call an API
+    console.log({ ...values, userType });
     toast({
       title: 'Registration Successful',
       description: "Welcome! We're glad to have you.",
     });
+
+    if (userType === 'corporate') {
+        router.push('/dashboard/corporate');
+    } else {
+        router.push('/dashboard');
+    }
   }
+
+  const nameLabel = userType === 'ngo' ? 'NGO Name' : 'Company Name';
+  const namePlaceholder = userType === 'ngo' ? 'Global Restoration Fund' : 'Example Corp';
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
         <FormField
           control={form.control}
-          name="ngoName"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>NGO Name</FormLabel>
+              <FormLabel>{nameLabel}</FormLabel>
               <FormControl>
-                <Input placeholder="Global Restoration Fund" {...field} />
+                <Input placeholder={namePlaceholder} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -59,7 +72,7 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="contact@globalrestoration.org" {...field} />
+                <Input placeholder="contact@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

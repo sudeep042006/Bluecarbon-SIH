@@ -18,14 +18,16 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Leaf, Shield, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Leaf, Shield, LogOut, Menu, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const navItems = [
+  const isCorporate = pathname.startsWith('/dashboard/corporate');
+  
+  const ngoNavItems = [
     {
       href: '/dashboard',
       icon: LayoutDashboard,
@@ -42,6 +44,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       label: 'Admin Verification',
     },
   ];
+
+  const corporateNavItems = [
+     {
+      href: '/dashboard/corporate',
+      icon: Briefcase,
+      label: 'Corporate Dashboard',
+    },
+  ];
+
+  const navItems = isCorporate ? corporateNavItems : ngoNavItems;
+  const user = isCorporate ? {name: 'Example Corp', type: 'Corporate Account'} : {name: 'Global Waves', type: 'NGO Account'};
+
 
   const SidebarNav = ({ className }: { className?: string }) => (
     <nav className={cn('flex flex-col h-full', className)}>
@@ -68,12 +82,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="flex items-center gap-2 p-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://picsum.photos/seed/user/100/100" />
-            <AvatarFallback>NGO</AvatarFallback>
+            <AvatarImage src={`https://picsum.photos/seed/${isCorporate ? 'corp' : 'user'}/100/100`} />
+            <AvatarFallback>{isCorporate ? 'C' : 'N'}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col text-sm">
-            <span className="font-semibold">Global Waves</span>
-            <span className="text-muted-foreground text-xs">NGO Account</span>
+            <span className="font-semibold">{user.name}</span>
+            <span className="text-muted-foreground text-xs">{user.type}</span>
           </div>
           <Button variant="ghost" size="icon" className="ml-auto">
             <LogOut className="w-4 h-4" />

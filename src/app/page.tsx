@@ -4,19 +4,25 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ArrowRight, CheckCircle, Leaf, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CheckCircle, Leaf, ShieldCheck, Briefcase } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Home() {
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [registerOpen, setRegisterOpen] = useState(false);
+  const [authAction, setAuthAction] = useState<'login' | 'register' | null>(null);
+  const [initialAuthTab, setInitialAuthTab] = useState<'ngo' | 'corporate'>('ngo');
 
+  const openAuthModal = (action: 'login' | 'register', userType: 'ngo' | 'corporate') => {
+    setInitialAuthTab(userType);
+    setAuthAction(action);
+  };
+  
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-mangroves');
 
   const features = [
@@ -39,7 +45,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SiteHeader onLogin={() => setLoginOpen(true)} onRegister={() => setRegisterOpen(true)} />
+      <SiteHeader onLogin={() => openAuthModal('login', 'ngo')} onRegister={() => openAuthModal('register', 'ngo')} onCorporateLogin={() => openAuthModal('login', 'corporate')} />
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white">
@@ -63,14 +69,12 @@ export default function Home() {
               A transparent, secure, and reliable registry for verifying and tracking marine-based carbon credits.
             </p>
             <div className="flex gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-                <Link href="/dashboard">
-                  Go to Dashboard <ArrowRight className="ml-2" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="secondary" onClick={() => setRegisterOpen(true)}>
-                Register Your NGO
-              </Button>
+               <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => openAuthModal('register', 'ngo')}>
+                  Register as NGO <ArrowRight className="ml-2" />
+               </Button>
+               <Button size="lg" variant="secondary" onClick={() => openAuthModal('register', 'corporate')}>
+                  Register as Corporate
+               </Button>
             </div>
           </div>
         </section>
@@ -104,21 +108,28 @@ export default function Home() {
       </main>
       <SiteFooter />
 
-      <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={authAction !== null} onOpenChange={(isOpen) => !isOpen && setAuthAction(null)}>
+        <DialogContent className="sm:max-w-[475px]">
           <DialogHeader>
-            <DialogTitle className="font-headline text-2xl">Login</DialogTitle>
+            <DialogTitle className="font-headline text-2xl">
+              {authAction === 'login' ? 'Welcome Back' : 'Create an Account'}
+            </DialogTitle>
+             <DialogDescription>
+              {authAction === 'login' ? 'Login to access your dashboard.' : 'Join our platform to make a difference.'}
+            </DialogDescription>
           </DialogHeader>
-          <LoginForm />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="font-headline text-2xl">Register</DialogTitle>
-          </DialogHeader>
-          <RegisterForm />
+          <Tabs defaultValue={initialAuthTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="ngo"><Leaf className="mr-2" /> NGO</TabsTrigger>
+              <TabsTrigger value="corporate"><Briefcase className="mr-2"/> Corporate</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ngo">
+                {authAction === 'login' ? <LoginForm userType="ngo" /> : <RegisterForm userType="ngo" />}
+            </TabsContent>
+            <TabsContent value="corporate">
+                {authAction === 'login' ? <LoginForm userType="corporate" /> : <RegisterForm userType="corporate" />}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>
